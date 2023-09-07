@@ -10,6 +10,10 @@ from ultralytics.engine.results import Results
 MINIMUM_CONFIDENCE = 0.5
 # The smaller this value, the harder it is for the smoothed value to change
 SMOOTH_FACTOR = 0.05
+VIDEO_TEXT_POSITION = (7, 70)
+VIDEO_TEXT_FONT_SCALE = 3
+VIDEO_TEXT_COLOR = (100, 0, 255)
+VIDEO_TEXT_THICKNESS = 3
 
 
 def smooth_value(new, previous) -> float:
@@ -26,6 +30,18 @@ def predict_capture(model: Model, capture: cv2.VideoCapture) -> Iterable[Results
             frame, conf=MINIMUM_CONFIDENCE, classes=0)
 
 
+def put_detection_counter_text(image: cv2.UMat, detection_count: int):
+    cv2.putText(
+        image,
+        str(detection_count),
+        VIDEO_TEXT_POSITION,
+        cv2.FONT_HERSHEY_SIMPLEX,
+        VIDEO_TEXT_FONT_SCALE,
+        VIDEO_TEXT_COLOR,
+        VIDEO_TEXT_THICKNESS,
+        cv2.LINE_AA)
+
+
 def main(video_path: str):
     # Load the model
     model = YOLO('yolov8n.pt')
@@ -39,10 +55,10 @@ def main(video_path: str):
         detection_count = len(result.boxes.data)
         smoothed_detection_count = smooth_value(
             smoothed_detection_count, detection_count)
-        print(f'Detected {round(smoothed_detection_count)} persons')
 
         # Display the annotated frame
         annotated_frame = result.plot()
+        put_detection_counter_text(annotated_frame, round(detection_count))
         cv2.imshow("YOLOv8 Inference", annotated_frame)
 
         # Break the loop if 'q' is pressed
