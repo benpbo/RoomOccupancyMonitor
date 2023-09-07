@@ -39,8 +39,8 @@ def put_detection_counter_text(image: cv2.UMat, detection_count: int):
         cv2.FONT_HERSHEY_SIMPLEX,
         VIDEO_TEXT_FONT_SCALE,
         VIDEO_TEXT_COLOR,
-        VIDEO_TEXT_THICKNESS,
-        cv2.LINE_AA)
+        thickness=VIDEO_TEXT_THICKNESS,
+        lineType=cv2.LINE_AA)
 
 
 def main(video_path: str):
