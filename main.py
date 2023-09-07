@@ -22,9 +22,8 @@ def predict_capture(model: Model, capture: cv2.VideoCapture) -> Iterable[Results
         if not success:
             break
 
-        results: list[Results] = model.predict(
+        yield from model.predict(
             frame, conf=MINIMUM_CONFIDENCE, classes=0)
-        yield results[0]
 
 
 def main(video_path: str):
