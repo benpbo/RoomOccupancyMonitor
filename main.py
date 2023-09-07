@@ -1,3 +1,6 @@
+import sys
+
+import cv2
 from PIL import Image
 from ultralytics import YOLO
 from ultralytics.engine.results import Results
@@ -8,18 +11,30 @@ MINIMUM_CONFIDENCE = 0.5
 model = YOLO('yolov8n.pt')
 
 # Predict with the model
-results: list[Results] = model.predict(
-    'https://ultralytics.com/images/bus.jpg',
-    classes=0)
-
-for result in results:
-    detection_count = sum(
-        confidence >= MINIMUM_CONFIDENCE
-        for (_,_,_,_, confidence, _name_index)
-        in result.boxes.data)
+_, video_path = sys.argv
+capture = cv2.VideoCapture(video_path)
+while capture.isOpened():
+    success, frame = capture.read()
+    if success:
+        results: list[Results] = model.predict(frame, classes=0)
+        result = results[0]
+        detection_count = sum(
+            confidence >= MINIMUM_CONFIDENCE
+            for (_,_,_,_, confidence, _name_index)
+            in result.boxes.data)
+        
+        print(f'Detected {detection_count} persons')
     
-    print(f'Detected {detection_count} persons')
+        # Display the annotated frame
+        annotated_frame = result.plot()
+        cv2.imshow("YOLOv8 Inference", annotated_frame)
 
-    im_array = result.plot()  # plot a BGR numpy array of predictions
-    im = Image.fromarray(im_array[..., ::-1])  # RGB PIL image
-    im.show()  # show image
+        # Break the loop if 'q' is pressed
+        if cv2.waitKey(1) & 0xFF == ord("q"):
+            break
+    else:
+        # Break the loop if the end of the video is reached
+        break
+    
+capture.release()
+cv2.destroyAllWindows()
