@@ -27,7 +27,7 @@ def predict_capture(model: Model, capture: cv2.VideoCapture) -> Iterable[Results
             break
 
         yield from model.predict(
-            frame, conf=MINIMUM_CONFIDENCE, classes=0)
+            frame, conf=MINIMUM_CONFIDENCE, classes=0, verbose=False)
 
 
 def put_detection_counter_text(image: cv2.UMat, detection_count: int):
