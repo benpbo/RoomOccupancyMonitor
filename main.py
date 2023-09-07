@@ -57,15 +57,18 @@ def main(video_path: str):
     for result in results:
         # Count detections
         detection_count = len(result.boxes.data)
+        logging.debug("Raw person detection count: %i", detection_count)
         new_smoothed_detection_count = smooth_value(
-            smoothed_detection_count, detection_count)
+            detection_count, smoothed_detection_count)
         if round(new_smoothed_detection_count) != round(smoothed_detection_count):
             logging.info("Person count changed: %i", round(new_smoothed_detection_count))
-            smoothed_detection_count = new_smoothed_detection_count
+
+        smoothed_detection_count = new_smoothed_detection_count
 
         # Display the annotated frame
         annotated_frame = result.plot()
-        put_detection_counter_text(annotated_frame, round(detection_count))
+        put_detection_counter_text(
+            annotated_frame, round(smoothed_detection_count))
         cv2.imshow("YOLOv8 Inference", annotated_frame)
 
         # Break the loop if 'q' is pressed
