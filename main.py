@@ -35,6 +35,7 @@ def main(video_path: str):
     results = predict_capture(model, capture)
     smoothed_detection_count = len(next(results).boxes.data)  # Initial value
     for result in results:
+        # Count detections
         detection_count = len(result.boxes.data)
         smoothed_detection_count = smooth_value(
             smoothed_detection_count, detection_count)
