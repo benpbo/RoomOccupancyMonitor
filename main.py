@@ -8,6 +8,10 @@ from ultralytics.engine.model import Model
 from ultralytics.engine.results import Results
 
 MINIMUM_CONFIDENCE = 0.5
+SMOOTH_FACTOR = 0.05 # The smaller this value, the harder it is for the smoothed value to change
+
+def smooth_value(new, previous) -> float:
+    return SMOOTH_FACTOR * new + (1 - SMOOTH_FACTOR) * previous
 
 def predict_capture(model: Model, capture: cv2.VideoCapture) -> Iterable[Results]:
     while capture.isOpened():
@@ -25,9 +29,12 @@ def main(video_path: str):
     
     # Predict with the model
     capture = cv2.VideoCapture(video_path)
-    for result in predict_capture(model, capture):
+    results = predict_capture(model, capture)
+    smoothed_detection_count = len(next(results).boxes.data) # Initial value
+    for result in results:
         detection_count = len(result.boxes.data)
-        print(f'Detected {detection_count} persons')
+        smoothed_detection_count = smooth_value(smoothed_detection_count, detection_count)
+        print(f'Detected {round(smoothed_detection_count)} persons')
 
         # Display the annotated frame
         annotated_frame = result.plot()
