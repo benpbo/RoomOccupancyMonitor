@@ -16,13 +16,11 @@ capture = cv2.VideoCapture(video_path)
 while capture.isOpened():
     success, frame = capture.read()
     if success:
-        results: list[Results] = model.predict(frame, classes=0)
+        results: list[Results] = model.predict(
+            frame, conf=MINIMUM_CONFIDENCE, classes=0)
         result = results[0]
-        detection_count = sum(
-            confidence >= MINIMUM_CONFIDENCE
-            for (_,_,_,_, confidence, _name_index)
-            in result.boxes.data)
-        
+
+        detection_count = len(result.boxes.data)
         print(f'Detected {detection_count} persons')
     
         # Display the annotated frame
