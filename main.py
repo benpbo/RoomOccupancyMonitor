@@ -19,23 +19,27 @@ def predict_capture(model: Model, capture: cv2.VideoCapture) -> Iterable[Results
             frame, conf=MINIMUM_CONFIDENCE, classes=0)
         yield results[0]
 
-# Load the model
-model = YOLO('yolov8n.pt')
-
-# Predict with the model
-_, video_path = sys.argv
-capture = cv2.VideoCapture(video_path)
-for result in predict_capture(model, capture):
-    detection_count = len(result.boxes.data)
-    print(f'Detected {detection_count} persons')
-
-    # Display the annotated frame
-    annotated_frame = result.plot()
-    cv2.imshow("YOLOv8 Inference", annotated_frame)
-
-    # Break the loop if 'q' is pressed
-    if cv2.waitKey(1) & 0xFF == ord("q"):
-        break
+def main(video_path: str):
+    # Load the model
+    model = YOLO('yolov8n.pt')
     
-capture.release()
-cv2.destroyAllWindows()
+    # Predict with the model
+    capture = cv2.VideoCapture(video_path)
+    for result in predict_capture(model, capture):
+        detection_count = len(result.boxes.data)
+        print(f'Detected {detection_count} persons')
+
+        # Display the annotated frame
+        annotated_frame = result.plot()
+        cv2.imshow("YOLOv8 Inference", annotated_frame)
+
+        # Break the loop if 'q' is pressed
+        if cv2.waitKey(1) & 0xFF == ord("q"):
+            break
+        
+    capture.release()
+    cv2.destroyAllWindows()
+
+if __name__ == '__main__':
+    _, video_path = sys.argv
+    main(video_path)
