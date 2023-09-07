@@ -1,3 +1,4 @@
+import logging
 import sys
 from typing import Iterable
 
@@ -44,17 +45,23 @@ def put_detection_counter_text(image: cv2.UMat, detection_count: int):
 
 def main(video_path: str):
     # Load the model
+    logging.info("Loading model")
     model = YOLO('yolov8n.pt')
 
     # Predict with the model
+    logging.info("Starting capture")
     capture = cv2.VideoCapture(video_path)
     results = predict_capture(model, capture)
     smoothed_detection_count = len(next(results).boxes.data)  # Initial value
+    logging.info("Initial person count: %i", smoothed_detection_count)
     for result in results:
         # Count detections
         detection_count = len(result.boxes.data)
-        smoothed_detection_count = smooth_value(
+        new_smoothed_detection_count = smooth_value(
             smoothed_detection_count, detection_count)
+        if round(new_smoothed_detection_count) != round(smoothed_detection_count):
+            logging.info("Person count changed: %i", round(new_smoothed_detection_count))
+            smoothed_detection_count = new_smoothed_detection_count
 
         # Display the annotated frame
         annotated_frame = result.plot()
@@ -70,5 +77,10 @@ def main(video_path: str):
 
 
 if __name__ == '__main__':
+    # Parse commandline arguments
     _, video_path = sys.argv
+
+    # Configure logging
+    logging.config.fileConfig('logging.config')
+
     main(video_path)
