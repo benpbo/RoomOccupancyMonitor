@@ -43,6 +43,22 @@ def put_detection_counter_text(image: cv2.UMat, detection_count: int):
         lineType=cv2.LINE_AA)
 
 
+class PersonCount:
+    def __init__(self, initial_value: int):
+        self._current_count = float(initial_value)
+
+    def update(self, new: int):
+        next_count = smooth_value(new, self._current_count)
+        has_value_changed = round(next_count) != self.current
+        self._current_count = next_count
+
+        return has_value_changed
+
+    @property
+    def current(self) -> int:
+        return round(self._current_count)
+
+
 def main(video_path: str):
     # Load the model
     logging.info('Loading model')
@@ -52,23 +68,19 @@ def main(video_path: str):
     logging.info('Starting capture')
     capture = cv2.VideoCapture(video_path)
     results = predict_capture(model, capture)
-    smoothed_detection_count = len(next(results).boxes.data)  # Initial value
-    logging.info('Initial person count: %i', smoothed_detection_count)
+    initial_result = next(results)
+    person_count = PersonCount(len(initial_result.boxes.data))
+    logging.info('Initial person count: %i', person_count.current)
     for result in results:
         # Count detections
         detection_count = len(result.boxes.data)
         logging.debug('Raw person detection count: %i', detection_count)
-        new_smoothed_detection_count = smooth_value(
-            detection_count, smoothed_detection_count)
-        if round(new_smoothed_detection_count) != round(smoothed_detection_count):
-            logging.info('Person count changed: %i', round(new_smoothed_detection_count))
-
-        smoothed_detection_count = new_smoothed_detection_count
+        if person_count.update(detection_count):
+            logging.info('Person count changed: %i', person_count.current)
 
         # Display the annotated frame
         annotated_frame = result.plot()
-        put_detection_counter_text(
-            annotated_frame, round(smoothed_detection_count))
+        put_detection_counter_text(annotated_frame, person_count.current)
         cv2.imshow('YOLOv8 Inference', annotated_frame)
 
         # Break the loop if 'q' is pressed
