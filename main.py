@@ -45,23 +45,23 @@ def put_detection_counter_text(image: cv2.UMat, detection_count: int):
 
 def main(video_path: str):
     # Load the model
-    logging.info("Loading model")
+    logging.info('Loading model')
     model = YOLO('yolov8n.pt')
 
     # Predict with the model
-    logging.info("Starting capture")
+    logging.info('Starting capture')
     capture = cv2.VideoCapture(video_path)
     results = predict_capture(model, capture)
     smoothed_detection_count = len(next(results).boxes.data)  # Initial value
-    logging.info("Initial person count: %i", smoothed_detection_count)
+    logging.info('Initial person count: %i', smoothed_detection_count)
     for result in results:
         # Count detections
         detection_count = len(result.boxes.data)
-        logging.debug("Raw person detection count: %i", detection_count)
+        logging.debug('Raw person detection count: %i', detection_count)
         new_smoothed_detection_count = smooth_value(
             detection_count, smoothed_detection_count)
         if round(new_smoothed_detection_count) != round(smoothed_detection_count):
-            logging.info("Person count changed: %i", round(new_smoothed_detection_count))
+            logging.info('Person count changed: %i', round(new_smoothed_detection_count))
 
         smoothed_detection_count = new_smoothed_detection_count
 
@@ -69,10 +69,10 @@ def main(video_path: str):
         annotated_frame = result.plot()
         put_detection_counter_text(
             annotated_frame, round(smoothed_detection_count))
-        cv2.imshow("YOLOv8 Inference", annotated_frame)
+        cv2.imshow('YOLOv8 Inference', annotated_frame)
 
         # Break the loop if 'q' is pressed
-        if cv2.waitKey(1) & 0xFF == ord("q"):
+        if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
     capture.release()
