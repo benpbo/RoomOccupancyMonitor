@@ -60,15 +60,7 @@ class PersonCount:
         return round(self._current_count)
 
 
-def main(video_path: str):
-    # Load the model
-    logging.info('Loading model')
-    model = YOLO('yolov8n.pt')
-
-    # Predict with the model
-    logging.info('Starting capture')
-    capture = cv2.VideoCapture(video_path)
-    results = predict_capture(model, capture)
+def display_results(results: Iterable[Results]):
     initial_result = next(results)
     person_count = PersonCount(len(initial_result.boxes.data))
     logging.info('Initial person count: %i', person_count.current)
@@ -88,8 +80,21 @@ def main(video_path: str):
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
-    capture.release()
     cv2.destroyAllWindows()
+
+
+def main(video_path: str):
+    # Load the model
+    logging.info('Loading model')
+    model = YOLO('yolov8n.pt')
+
+    # Predict with the model
+    logging.info('Starting capture')
+    capture = cv2.VideoCapture(video_path)
+    results = predict_capture(model, capture)
+    display_results(results)
+
+    capture.release()
 
 
 if __name__ == '__main__':
