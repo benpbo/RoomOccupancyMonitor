@@ -2,6 +2,7 @@ import logging
 import sys
 from typing import Iterable
 
+from argparse import ArgumentParser
 import cv2
 from PIL import Image
 from ultralytics import YOLO
@@ -93,7 +94,13 @@ def main(video_path: str):
 
 if __name__ == '__main__':
     # Parse commandline arguments
-    _, video_path = sys.argv
+    parser = ArgumentParser()
+    parser.add_argument(
+        'video',
+        help='Path to video file that the model will be run on')
+
+    arguments = parser.parse_args()
+    video_path = arguments.video
 
     # Configure logging
     logging.config.fileConfig('logging.config')
